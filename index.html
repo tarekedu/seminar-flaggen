@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#fbfbfa">
 <title>Seminar-Flaggen</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="application-name" content="Seminar-Flaggen">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Flaggen">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-32.png">
 <style>
 :root{
   --bg:#fbfbfa; --card:#ffffff; --fg:#1f2328; --muted:#6b7280; --line:#e6e4df;
@@ -227,6 +235,10 @@ function renderDetail(){
   document.querySelectorAll("[data-task]").forEach(el=>{
     el.querySelector(".chk").onclick = ()=>{
       const t = s.tasks.find(x=>x.id===el.dataset.task); if(!t) return;
+      if(!t.done){
+        const kurz = t.text.length > 70 ? t.text.slice(0,70) + "…" : t.text;
+        if(!confirm("Wirklich als erledigt markieren?\n\n" + kurz + "\n\nDanach verschwindet die Flagge.")) return;
+      }
       t.done = !t.done; t.doneAt = t.done? Date.now(): null; save(); renderDetail();
     };
     el.querySelector(".del").onclick = ()=>{
@@ -336,6 +348,13 @@ function openBackup(){
 document.getElementById("btnAdd").onclick = ()=>openSeminarSheet();
 document.getElementById("btnBackup").onclick = openBackup;
 renderHome();
+
+/* Service Worker: macht die App installierbar und offline nutzbar */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
