@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#fbfbfa">
+<title>Seminar-Flaggen</title>
+<style>
+:root{
+  --bg:#fbfbfa; --card:#ffffff; --fg:#1f2328; --muted:#6b7280; --line:#e6e4df;
+  --accent:#2f5d50; --flag:#c0392b; --ok:#2f6f4e;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg)}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:16px; line-height:1.45; min-height:100vh;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+header{
+  position:sticky; top:0; z-index:20; background:rgba(251,251,250,.94);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--line);
+  padding:12px 16px; display:flex; align-items:center; justify-content:space-between;
+}
+header h1{font-size:17px; margin:0; font-weight:650; letter-spacing:.2px}
+header .actions{display:flex; gap:8px}
+.iconbtn{
+  border:1px solid var(--line); background:#fff; color:var(--fg);
+  border-radius:10px; padding:7px 11px; font-size:14px; font-weight:600; cursor:pointer;
+}
+.iconbtn:active{transform:scale(.97)}
+main{padding:14px 14px 40px; max-width:640px; margin:0 auto}
+.grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.tile{
+  position:relative; background:var(--card); border:1px solid var(--line); border-radius:16px;
+  padding:14px 12px 12px; cursor:pointer; transition:border-color .15s, transform .06s;
+  min-height:112px; display:flex; flex-direction:column; justify-content:space-between;
+}
+.tile:active{transform:scale(.985)}
+.tile .emo{font-size:28px; line-height:1}
+.tile .name{font-weight:600; font-size:15px; margin-top:6px; word-break:break-word}
+.tile .sub{font-size:12px; color:var(--muted); margin-top:3px}
+.flag{
+  position:absolute; top:9px; right:9px; background:var(--flag); color:#fff;
+  font-size:12px; font-weight:700; border-radius:999px; padding:3px 8px;
+  display:flex; align-items:center; gap:4px; box-shadow:0 1px 4px rgba(0,0,0,.12);
+}
+.flag.quiet{background:#9aa1a9}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
+.addtile{
+  border:1px dashed #c9c6bf; background:transparent; color:var(--muted);
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+  gap:6px; font-size:14px; font-weight:600; min-height:112px; border-radius:16px; cursor:pointer;
+}
+.backrow{display:flex; align-items:center; gap:10px; margin-bottom:12px}
+.back{
+  border:none; background:none; color:var(--accent); font-size:15px; font-weight:600; cursor:pointer; padding:4px 0;
+}
+.detail-head{display:flex; align-items:center; gap:10px; margin-bottom:4px}
+.detail-head .emo{font-size:30px}
+.detail-head h2{margin:0; font-size:19px}
+.quick{display:flex; gap:8px; margin:12px 0 14px}
+.quick input{
+  flex:1; border:1px solid var(--line); border-radius:12px; padding:12px 13px;
+  font-size:16px; font-family:inherit; background:#fff;
+}
+.quick input:focus{outline:2px solid rgba(47,93,80,.25); border-color:var(--accent)}
+.quick button{
+  border:none; background:var(--accent); color:#fff; border-radius:12px; padding:0 16px;
+  font-size:15px; font-weight:650; cursor:pointer;
+}
+.quick button:disabled{opacity:.4}
+ul.tasks{list-style:none; margin:0; padding:0}
+ul.tasks li{
+  display:flex; align-items:flex-start; gap:10px; background:var(--card);
+  border:1px solid var(--line); border-radius:12px; padding:11px 12px; margin-bottom:8px;
+}
+ul.tasks li.done{opacity:.55}
+ul.tasks li.done .txt{text-decoration:line-through}
+.chk{
+  width:22px; height:22px; border-radius:50%; border:2px solid #bcb8b0; background:#fff;
+  flex:0 0 auto; margin-top:1px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.chk.on{background:var(--ok); border-color:var(--ok); color:#fff; font-size:13px}
+.txt{flex:1; font-size:15.5px; word-break:break-word}
+.meta{font-size:12px; color:var(--muted); margin-top:2px}
+.del{border:none; background:none; color:#b9b4ab; font-size:16px; cursor:pointer; padding:0 2px}
+.sectionlabel{font-size:12px; text-transform:uppercase; letter-spacing:.7px; color:var(--muted); margin:16px 0 8px}
+.empty{text-align:center; color:var(--muted); font-size:14px; padding:22px 10px}
+.modal{
+  position:fixed; inset:0; background:rgba(20,22,25,.42); display:flex; align-items:flex-end;
+  justify-content:center; z-index:50; padding:0;
+}
+.sheet{
+  background:#fff; width:100%; max-width:520px; border-radius:18px 18px 0 0;
+  padding:18px 16px calc(18px + env(safe-area-inset-bottom)); max-height:88vh; overflow:auto;
+}
+.sheet h3{margin:0 0 14px; font-size:17px}
+.field{margin-bottom:12px}
+.field label{display:block; font-size:13px; color:var(--muted); margin-bottom:5px}
+.field input[type=text]{
+  width:100%; border:1px solid var(--line); border-radius:10px; padding:11px 12px; font-size:16px; font-family:inherit;
+}
+.emojirow,.colorrow{display:flex; flex-wrap:wrap; gap:7px}
+.emojirow button{
+  border:1px solid var(--line); background:#fff; border-radius:10px; padding:7px 9px; font-size:20px; cursor:pointer;
+}
+.emojirow button.sel{border-color:var(--accent); box-shadow:0 0 0 2px rgba(47,93,80,.18)}
+.colorrow button{
+  width:26px; height:26px; border-radius:50%; border:2px solid transparent; cursor:pointer;
+}
+.colorrow button.sel{border-color:#1f2328}
+.sheet .send{
+  width:100%; border:none; background:var(--accent); color:#fff; border-radius:12px;
+  padding:14px; font-size:16px; font-weight:650; margin-top:6px; cursor:pointer;
+}
+.sheet .cancel{
+  width:100%; border:1px solid var(--line); background:#fff; border-radius:12px;
+  padding:12px; font-size:15px; font-weight:600; margin-top:8px; cursor:pointer;
+}
+footer{text-align:center; color:#a9a49c; font-size:12px; padding:26px 16px 40px}
+@media (max-width:360px){ .grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header>
+  <h1>🚩 Seminar-Flaggen</h1>
+  <div class="actions">
+    <button class="iconbtn" id="btnAdd">+ Seminar</button>
+    <button class="iconbtn" id="btnBackup" title="Sicherung">⋯</button>
+  </div>
+</header>
+<main id="app"></main>
+<footer id="foot">Offene Aufgabe = Flagge am Seminar · erledigt = Flagge weg</footer>
+
+<script>
+"use strict";
+const KEY = "seminar_flaggen_v1";
+const EMOJIS = ["📐","📚","🧪","🎓","✏️","🔬","🧭","🗣️","💡","📝","🎨","⚙️","🌍","🧮","🏫","📊"];
+const COLORS = ["#2f5d50","#2b6cb0","#b7791f","#9b2c2c","#553c9a","#2c7a7b","#975a16","#4a5568"];
+
+let state = load();
+let view = {screen:"home", id:null};
+const app = document.getElementById("app");
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {
+    seminars:[
+      {id:uid(), name:"WP6 Übergang Schule–Beruf", emoji:"🎓", color:"#2f5d50", tasks:[]},
+      {id:uid(), name:"Praxisseminar", emoji:"🏫", color:"#2b6cb0", tasks:[]}
+    ],
+    seen:false
+  };
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function uid(){ return Math.random().toString(36).slice(2,9); }
+function openCount(s){ return s.tasks.filter(t=>!t.done).length; }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function fmt(ts){
+  if(!ts) return "";
+  const d = new Date(ts);
+  return d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"});
+}
+
+/* ---------- Home ---------- */
+function renderHome(){
+  const total = state.seminars.reduce((n,s)=>n+openCount(s),0);
+  document.getElementById("foot").textContent = total
+    ? total + (total===1?" offene Aufgabe":" offene Aufgaben") + " · offene Aufgabe = Flagge am Seminar"
+    : "Alles erledigt · keine Flagge, keine offene Aufgabe";
+  app.innerHTML = `<div class="grid">` + state.seminars.map(s=>{
+    const n = openCount(s);
+    const next = s.tasks.filter(t=>!t.done).slice(-1)[0];
+    return `<div class="tile" data-id="${s.id}">
+      ${n>0?`<span class="flag">🚩 ${n}</span>`:""}
+      <div class="emo">${s.emoji}</div>
+      <div>
+        <div class="name">${esc(s.name)}</div>
+        <div class="sub">${n>0 ? "offen: " + esc(next? next.text.slice(0,28) : "") : "keine offene Aufgabe"}</div>
+      </div>
+    </div>`;
+  }).join("") + `<div class="addtile" id="tileAdd">+<br>Seminar</div></div>`;
+  document.querySelectorAll(".tile").forEach(el=>{
+    el.onclick = ()=>{ view={screen:"detail", id: el.dataset.id}; renderDetail(); };
+  });
+  document.getElementById("tileAdd").onclick = openSeminarSheet;
+}
+
+/* ---------- Detail ---------- */
+function renderDetail(){
+  const s = state.seminars.find(x=>x.id===view.id);
+  if(!s){ view={screen:"home"}; renderHome(); return; }
+  const open = s.tasks.filter(t=>!t.done);
+  const done = s.tasks.filter(t=>t.done);
+  app.innerHTML = `
+    <div class="backrow"><button class="back" id="back">‹ Alle Seminare</button></div>
+    <div class="detail-head">
+      <span class="emo">${s.emoji}</span>
+      <h2>${esc(s.name)}</h2>
+      <button class="iconbtn" id="edit" style="margin-left:auto">Bearbeiten</button>
+    </div>
+    ${open.length? `<div style="color:var(--flag); font-size:13px; font-weight:600">🚩 ${open.length} offen</div>` : `<div style="color:var(--muted); font-size:13px">keine offene Aufgabe</div>`}
+    <div class="quick">
+      <input id="newtask" type="text" placeholder="Neue Aufgabe, z. B. Hausarbeit lesen…" autocomplete="off">
+      <button id="addtask" disabled>+</button>
+    </div>
+    ${open.length? `<div class="sectionlabel">Offen</div><ul class="tasks">${open.map(taskRow).join("")}</ul>` : `<div class="empty">Noch keine offene Aufgabe.<br>Schreib oben die erste rein, solange du im Seminar sitzt.</div>`}
+    ${done.length? `<div class="sectionlabel">Erledigt (${done.length})</div><ul class="tasks">${done.map(taskRow).join("")}</ul>` : ""}
+  `;
+  document.getElementById("back").onclick = ()=>{ view={screen:"home"}; renderHome(); };
+  document.getElementById("edit").onclick = ()=>openSeminarSheet(s);
+  const inp = document.getElementById("newtask");
+  const add = document.getElementById("addtask");
+  inp.oninput = ()=>{ add.disabled = !inp.value.trim(); };
+  function submit(){
+    const txt = inp.value.trim(); if(!txt) return;
+    s.tasks.push({id:uid(), text:txt, done:false, created:Date.now()});
+    save(); renderDetail();
+    setTimeout(()=>{ const i2=document.getElementById("newtask"); if(i2) i2.focus(); }, 30);
+  }
+  add.onclick = submit;
+  inp.onkeydown = e=>{ if(e.key==="Enter") submit(); };
+  document.querySelectorAll("[data-task]").forEach(el=>{
+    el.querySelector(".chk").onclick = ()=>{
+      const t = s.tasks.find(x=>x.id===el.dataset.task); if(!t) return;
+      t.done = !t.done; t.doneAt = t.done? Date.now(): null; save(); renderDetail();
+    };
+    el.querySelector(".del").onclick = ()=>{
+      s.tasks = s.tasks.filter(x=>x.id!==el.dataset.task); save(); renderDetail();
+    };
+  });
+}
+function taskRow(t){
+  return `<li class="${t.done?"done":""}" data-task="${t.id}">
+    <div class="chk ${t.done?"on":""}">${t.done?"✓":""}</div>
+    <div class="txt">${esc(t.text)}<div class="meta">notiert ${fmt(t.created)}${t.done?" · erledigt "+fmt(t.doneAt):""}</div></div>
+    <button class="del">✕</button>
+  </li>`;
+}
+
+/* ---------- Seminar-Sheet ---------- */
+let sheet = {emoji:"📚", color:COLORS[0]};
+function openSeminarSheet(existing){
+  sheet.emoji = existing? existing.emoji : "📚";
+  sheet.color = existing? existing.color : COLORS[0];
+  const wrap = document.createElement("div");
+  wrap.className = "modal"; wrap.id="modal";
+  wrap.innerHTML = `<div class="sheet">
+    <h3>${existing? "Seminar bearbeiten":"Neues Seminar"}</h3>
+    <div class="field"><label>Name</label>
+      <input type="text" id="sname" placeholder="z. B. Pädagogik-Seminar" value="${existing?esc(existing.name):""}">
+    </div>
+    <div class="field"><label>Symbol</label>
+      <div class="emojirow" id="erow">${EMOJIS.map(e=>`<button data-e="${e}" class="${e===sheet.emoji?"sel":""}">${e}</button>`).join("")}</div>
+    </div>
+    <div class="field"><label>Farbe</label>
+      <div class="colorrow" id="crow">${COLORS.map(c=>`<button data-c="${c}" style="background:${c}" class="${c===sheet.color?"sel":""}"></button>`).join("")}</div>
+    </div>
+    <button class="send" id="sSave">Speichern</button>
+    ${existing? `<button class="cancel" id="sDel" style="color:#9b2c2c">Seminar löschen</button>`:""}
+    <button class="cancel" id="sCancel">Abbrechen</button>
+  </div>`;
+  document.body.appendChild(wrap);
+  wrap.querySelectorAll("#erow button").forEach(b=>{
+    b.onclick = ()=>{ sheet.emoji=b.dataset.e; wrap.querySelectorAll("#erow button").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); };
+  });
+  wrap.querySelectorAll("#crow button").forEach(b=>{
+    b.onclick = ()=>{ sheet.color=b.dataset.c; wrap.querySelectorAll("#crow button").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); };
+  });
+  const close = ()=>{ wrap.remove(); };
+  wrap.querySelector("#sCancel").onclick = close;
+  wrap.onclick = e=>{ if(e.target===wrap) close(); };
+  wrap.querySelector("#sSave").onclick = ()=>{
+    const name = wrap.querySelector("#sname").value.trim();
+    if(!name){ wrap.querySelector("#sname").focus(); return; }
+    if(existing){
+      existing.name = name; existing.emoji = sheet.emoji; existing.color = sheet.color;
+    } else {
+      state.seminars.push({id:uid(), name, emoji:sheet.emoji, color:sheet.color, tasks:[]});
+    }
+    save(); close();
+    if(view.screen==="detail") renderDetail(); else renderHome();
+  };
+  const delBtn = wrap.querySelector("#sDel");
+  if(delBtn) delBtn.onclick = ()=>{
+    if(!confirm("Seminar mit allen Aufgaben löschen?")) return;
+    state.seminars = state.seminars.filter(x=>x.id!==existing.id);
+    save(); close(); view={screen:"home"}; renderHome();
+  };
+  setTimeout(()=>wrap.querySelector("#sname").focus(), 60);
+}
+
+/* ---------- Backup ---------- */
+function openBackup(){
+  const wrap = document.createElement("div");
+  wrap.className="modal"; wrap.id="modal";
+  wrap.innerHTML = `<div class="sheet">
+    <h3>Sicherung</h3>
+    <p style="font-size:14px;color:var(--muted);margin-top:0">Die Daten liegen nur auf diesem Gerät. Exportiere sie ab und zu, dann kannst du sie auf einem anderen Gerät wieder einlesen.</p>
+    <button class="send" id="bExp">Als Datei speichern</button>
+    <button class="cancel" id="bImp">Aus Datei laden</button>
+    <button class="cancel" id="bClose">Schließen</button>
+    <input type="file" id="bFile" accept="application/json" style="display:none">
+  </div>`;
+  document.body.appendChild(wrap);
+  const close=()=>wrap.remove();
+  wrap.querySelector("#bClose").onclick = close;
+  wrap.onclick = e=>{ if(e.target===wrap) close(); };
+  wrap.querySelector("#bExp").onclick = ()=>{
+    const blob = new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "seminar-flaggen-"+new Date().toISOString().slice(0,10)+".json";
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+  const file = wrap.querySelector("#bFile");
+  wrap.querySelector("#bImp").onclick = ()=>file.click();
+  file.onchange = ()=>{
+    const f = file.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = ()=>{
+      try{
+        const d = JSON.parse(r.result);
+        if(!d || !Array.isArray(d.seminars)) throw new Error("Format");
+        state = d; save(); close(); view={screen:"home"}; renderHome();
+      }catch(e){ alert("Datei konnte nicht gelesen werden."); }
+    };
+    r.readAsText(f);
+  };
+}
+
+document.getElementById("btnAdd").onclick = ()=>openSeminarSheet();
+document.getElementById("btnBackup").onclick = openBackup;
+renderHome();
+</script>
+</body>
+</html>
