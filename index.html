@@ -195,7 +195,7 @@ function renderHome(){
   document.querySelectorAll(".tile").forEach(el=>{
     el.onclick = ()=>{ view={screen:"detail", id: el.dataset.id}; renderDetail(); };
   });
-  document.getElementById("tileAdd").onclick = openSeminarSheet;
+  document.getElementById("tileAdd").onclick = ()=>openSeminarSheet();
 }
 
 /* ---------- Detail ---------- */
@@ -257,6 +257,7 @@ function taskRow(t){
 /* ---------- Seminar-Sheet ---------- */
 let sheet = {emoji:"📚", color:COLORS[0]};
 function openSeminarSheet(existing){
+  if(existing && !existing.id) existing = null;   // Klick-Event abfangen
   sheet.emoji = existing? existing.emoji : "📚";
   sheet.color = existing? existing.color : COLORS[0];
   const wrap = document.createElement("div");
